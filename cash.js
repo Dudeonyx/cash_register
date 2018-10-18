@@ -205,10 +205,6 @@ class Library {
         this.read = (this.read === 'Read') ? 'Not Read' : 'Read';
         return this.read;
       },
-      /*  setOwner(newOwner) {
-        owner = newOwner;
-        return owner;
-      }, // */
     };
     this.shelf.push(book);
     return book;
