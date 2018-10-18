@@ -152,7 +152,6 @@ class Library {
   save(book) {
     const { shelf } = this;
     const bookIndex = shelf.findIndex(element => element.name === book.name);
-    // for (let i = 0; i < shelf.length; i += 1) {
     if (bookIndex > -1) {
       return `'${book.name}' already exists in ${this.username}'s Library`;
     }
@@ -162,7 +161,6 @@ class Library {
   delete(book) {
     const { shelf } = this;
     const bookIndex = shelf.findIndex(element => element === book || element.name === book.name);
-    // for (let i = 0; i < shelf.length; i += 1) {
     if (bookIndex > -1) {
       shelf.splice(bookIndex, 1);
       return `'${book.name}' has been deleted from ${this.username}'s Library`;
