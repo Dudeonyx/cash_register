@@ -154,7 +154,7 @@ const Lib = (() => {
     }
 
     static listLibraries() {
-      return users.reduce((acc, val) => acc + val.username, '');
+      return users.reduce((acc, val) => `${acc + val.username}, `, '').replace(/, $/, '');
     }
 
     static addToLibraryList(library) {
@@ -269,9 +269,14 @@ paul.CreateBook('Arrgh', 'Author Three', 545, 'not read').saveThis();
 alice.saveBook(paul.shelf[2]);
 alice.deleteBook(paul.shelf[2]);
 
-const t = (function tempf() { // eslint-disable-line no-unused-vars
+function Tempf() { // eslint-disable-line no-unused-vars
   const { details } = paul.CreateBook('Biik', 'Author Four', 545, 'not read');
+  const lol = 'lol';
   return {
     details,
+    lol,
   };
-}());
+}
+
+const v = new Tempf(); // eslint-disable-line no-unused-vars
+const t = Tempf(); // eslint-disable-line no-unused-vars
