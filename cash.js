@@ -175,12 +175,12 @@ class Library {
   }
 
 
-  CreateBook(name, author, pages, readStatus) {
+  CreateBook(title, author, pages, readStatus) {
     const { username: owner } = this; // to keep username as owner in closure
-    const bookIndex = this.shelf.findIndex(element => element.name === name);
+    const bookIndex = this.shelf.findIndex(element => element.name === title);
     // check if another book with the same name is already in the shelf
     if (bookIndex > -1) {
-      throw new Error(`'${name}' already exists in ${this.username}'s Library`);
+      throw new Error(`'${title}' already exists in ${this.username}'s Library`);
     }
     /* eslint-disable no-use-before-define */
     const details = detail => (detail
@@ -207,7 +207,7 @@ class Library {
     const trashThis = library => (library ? library.deleteBook(book) : this.deleteBook(book));
     /* eslint-enable no-use-before-define */
     const book = {
-      title: name,
+      title,
       pages,
       author,
       read: titleCase(readStatus),
