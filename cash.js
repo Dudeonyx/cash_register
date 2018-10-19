@@ -259,10 +259,10 @@ const Lib = (() => {
   });
 })();
 
-
-const alice = new Lib.Library('Alice');
-const paul = new Lib.Library('Paul');
-const john = new Lib.Library('John'); // eslint-disable-line no-unused-vars
+const { Library } = Lib;
+const alice = new Library('Alice');
+const paul = new Library('Paul');
+const john = new Library('John'); // eslint-disable-line no-unused-vars
 const wonderwoman = alice.CreateBook('Wonder', 'Author One', 250, 'Read');
 wonderwoman.saveThis();
 const superman = paul.CreateBook('Super', 'Author Two', 308, 'Not read');
