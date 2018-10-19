@@ -144,88 +144,121 @@ const myFunctions = (() => { // eslint-disable-line no-unused-vars
   };
 })();
 
-class Library {
-  constructor(username) {
-    this.username = titleCase(username);
-    this.shelf = [];
-  }
-
-
-  saveBook(book) {
-    const { shelf } = this;
-    const bookIndex = shelf.findIndex(element => element.title === book.title);
-    // check if another book with the same name is already in the shelf
-    if (bookIndex > -1) {
-      return `'${book.title}' already exists in ${this.username}'s Library`;
+const Lib = (() => {
+  const users = [];
+  class Library {
+    constructor(username) {
+      this.username = titleCase(username);
+      this.shelf = [];
+      this.addToLibraryList();
     }
-    this.shelf.push(book);
-    return `'${book.title}' has been added to ${this.username}'s Library`;
-  }
 
-
-  deleteBook(book) {
-    const { shelf } = this;
-    const bookIndex = shelf.findIndex(element => element === book || element.title === book.title);
-    // check if book is in the shelf
-    if (bookIndex > -1) {
-      shelf.splice(bookIndex, 1);
-      return `'${book.title}' has been deleted from ${this.username}'s Library`;
+    static listLibraries() {
+      return users.reduce((acc, val) => acc + val.username, '');
     }
-    return `'${book.title}' does not exist in ${this.username}'s Library`;
-  }
 
-
-  CreateBook(title, author, pages, readStatus) {
-    const { username: owner } = this; // to keep username as owner in closure
-    const bookIndex = this.shelf.findIndex(element => element.name === title);
-    // check if another book with the same name is already in the shelf
-    if (bookIndex > -1) {
-      throw new Error(`'${title}' already exists in ${this.username}'s Library`);
+    static addToLibraryList(library) {
+      if (library.constructor !== Library) throw new Error('Invalid Library');
+      const libraryIndex = users.findIndex(entry => entry.username === library.username);
+      // check if another book with the same name is already in the shelf
+      if (libraryIndex > -1) {
+        return `'${library.username}' already exists in Users`;
+      }
+      users.push(library);
+      return `'${library.username}' has been added to Users`;
     }
-    /* eslint-disable no-use-before-define */
-    const details = detail => (detail
-      ?
-      `${[titleCase(detail)]}: ${book[detail.toLowerCase()]}`
-      :
-      `Title: ${book.title},
+
+    addToLibraryList() {
+      const libraryIndex = users.findIndex(entry => entry.username === this.username);
+      // check if another book with the same name is already in the shelf
+      if (libraryIndex > -1) {
+        return `'${this.username}' already exists in Users`;
+      }
+      users.push(this);
+      return `'${this.username}' has been added to Users`;
+    }
+
+    saveBook(book) {
+      const { shelf } = this;
+      const bookIndex = shelf.findIndex(entry => entry.title === book.title);
+      // check if another book with the same name is already in the shelf
+      if (bookIndex > -1) {
+        return `'${book.title}' already exists in ${this.username}'s Library`;
+      }
+      this.shelf.push(book);
+      return `'${book.title}' has been added to ${this.username}'s Library`;
+    }
+
+
+    deleteBook(book) {
+      const { shelf } = this;
+      const bookIndex = shelf.findIndex(entry => entry === book || entry.title === book.title);
+      // check if book is in the shelf
+      if (bookIndex > -1) {
+        shelf.splice(bookIndex, 1);
+        return `'${book.title}' has been deleted from ${this.username}'s Library`;
+      }
+      return `'${book.title}' does not exist in ${this.username}'s Library`;
+    }
+
+
+    CreateBook(title, author, pages, readStatus) {
+      const { username: owner } = this; // to keep username as owner in closure
+      const bookIndex = this.shelf.findIndex(element => element.name === title);
+      // check if another book with the same name is already in the shelf
+      if (bookIndex > -1) {
+        throw new Error(`'${title}' already exists in ${this.username}'s Library`);
+      }
+      /* eslint-disable no-use-before-define */
+      const details = detail => (detail
+        ?
+        `${[titleCase(detail)]}: ${book[detail.toLowerCase()]}`
+        :
+        `Title: ${book.title},
  Author: ${book.author},
  Pages: ${book.pages},
  ${book.read},
  Library: ${owner}`);
-    const getOwner = () => owner;
-    const toggleRead = (status) => {
-      const validStatus = !status || titleCase(status);
-      if (status || validStatus === 'Read' || validStatus === 'Not Read') {
-        book.read = validStatus;
+      const getOwner = () => owner;
+      const toggleRead = (status) => {
+        const validStatus = !status || titleCase(status);
+        if (status || validStatus === 'Read' || validStatus === 'Not Read') {
+          book.read = validStatus;
+          return book.read;
+        }
+        book.read = (book.read === 'Read') ? 'Not Read' : 'Read';
         return book.read;
-      }
-      book.read = (book.read === 'Read') ? 'Not Read' : 'Read';
-      return book.read;
-    };
-    const test2 = () => {};
-    const saveThis = library => (library ? library.saveBook(book) : this.saveBook(book));
-    const trashThis = library => (library ? library.deleteBook(book) : this.deleteBook(book));
-    /* eslint-enable no-use-before-define */
-    const book = {
-      title,
-      pages,
-      author,
-      read: titleCase(readStatus),
-      details,
-      getOwner,
-      toggleRead,
-      test1() {},
-      test2,
-      saveThis,
-      trashThis,
-    };
-    return Object.freeze(book);
+      };
+      const test2 = () => {};
+      const saveThis = (library = this) => library.saveBook(book);
+      const trashThis = (library = this) => library.deleteBook(book);
+      /* eslint-enable no-use-before-define */
+      const book = {
+        title,
+        pages,
+        author,
+        read: titleCase(readStatus),
+        details,
+        getOwner,
+        toggleRead,
+        test1() {},
+        test2,
+        saveThis,
+        trashThis,
+      };
+      return Object.freeze(book);
+    }
   }
-}
+
+  return Object.freeze({
+    Library,
+  });
+})();
 
 
-const alice = new Library('Alice');
-const paul = new Library('Paul');
+const alice = new Lib.Library('Alice');
+const paul = new Lib.Library('Paul');
+const john = new Lib.Library('John'); // eslint-disable-line no-unused-vars
 const wonderwoman = alice.CreateBook('Wonder', 'Author One', 250, 'Read');
 wonderwoman.saveThis();
 const superman = paul.CreateBook('Super', 'Author Two', 308, 'Not read');
