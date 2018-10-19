@@ -144,20 +144,14 @@ const myFunctions = (() => { // eslint-disable-line no-unused-vars
   };
 })();
 
-const Lib = (() => {
+const Lib = () => {
   const users = [];
-  class Library {
-    constructor(username) {
-      this.username = titleCase(username);
-      this.shelf = [];
-      this.addToLibraryList();
-    }
-
-    static listLibraries() {
+  const staticMethods = {
+    listLibraries() {
       return users.reduce((acc, val) => `${acc}'${val.username}', `, '').replace(/, $/, '');
-    }
+    },
 
-    static addToLibraryList(library) {
+    addToLibraryList(library) {
       if (library.constructor !== Library) throw new Error('Invalid Library');
       const libraryIndex = users.findIndex(entry => entry.username === library.username);
       // check if another book with the same name is already in the shelf
@@ -167,20 +161,23 @@ const Lib = (() => {
       users.push(library);
       return `'${library.username}' has been added to Users`;
     }
+  };
 
+
+  const instanceMethods = {
     listBooks() {
       return this.shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
-    }
+    },
 
-    addToLibraryList() {
-      const libraryIndex = users.findIndex(entry => entry.username === this.username);
+    /*addToLibraryList() {
+      const libraryIndex = users.findIndex(entry => entry.username === username);
       // check if another book with the same name is already in the shelf
       if (libraryIndex > -1) {
-        return `'${this.username}' already exists in Users`;
+        return `'${username}' already exists in Users`;
       }
       users.push(this);
-      return `'${this.username}' has been added to Users`;
-    }
+      return `'${username}' has been added to Users`;
+    },*/
 
     saveBook(book) {
       const { shelf } = this;
@@ -191,7 +188,7 @@ const Lib = (() => {
       }
       this.shelf.push(book);
       return `'${book.title}' has been added to ${this.username}'s Library`;
-    }
+    },
 
 
     deleteBook(book) {
@@ -203,12 +200,12 @@ const Lib = (() => {
         return `'${book.title}' has been deleted from ${this.username}'s Library`;
       }
       return `'${book.title}' does not exist in ${this.username}'s Library`;
-    }
+    },
 
 
     CreateBook(title, author, pages, readStatus) {
       const { username: owner } = this; // to keep username as owner in closure
-      const bookIndex = this.shelf.findIndex(element => element.name === title);
+      const bookIndex = shelf.findIndex(element => element.name === title);
       // check if another book with the same name is already in the shelf
       if (bookIndex > -1) {
         throw new Error(`'${title}' already exists in ${this.username}'s Library`);
@@ -251,29 +248,36 @@ const Lib = (() => {
         trashThis,
       };
       return Object.freeze(book);
-    }
+    },
+  };
+
+  function Library(user) {
+    const username = titleCase(user);
+    this.user = user;
+    const shelf = [];
+    // this.addToLibraryList();
+    //return {};
   }
+  Object.keys(staticMethods).forEach((key) => { Library[key] = staticMethods[key]; });
+  Object.keys(instanceMethods).forEach((key) => { Library.prototype[key] = instanceMethods[key]; });
+  return Library;
+};
 
-  return Object.freeze({
-    Library,
-  });
-})();
-
-const { Library } = Lib;
+const Library = Lib();
 const alice = new Library('Alice');
 const paul = new Library('Paul');
 const john = new Library('John'); // eslint-disable-line no-unused-vars
-const wonderwoman = alice.CreateBook('Wonder', 'Author One', 250, 'Read');
-wonderwoman.saveThis();
-const superman = paul.CreateBook('Super', 'Author Two', 308, 'Not read');
-superman.saveThis();
-alice.saveBook(superman);
-paul.saveBook(wonderwoman);
-paul.CreateBook('Arrgh', 'Author Three', 545, 'not read').saveThis();
-alice.saveBook(paul.shelf[2]);
-alice.deleteBook(paul.shelf[2]);
+// const wonderwoman = alice.CreateBook('Wonder', 'Author One', 250, 'Read');
+// wonderwoman.saveThis();
+// const superman = paul.CreateBook('Super', 'Author Two', 308, 'Not read');
+// superman.saveThis();
+// alice.saveBook(superman);
+// paul.saveBook(wonderwoman);
+// paul.CreateBook('Arrgh', 'Author Three', 545, 'not read').saveThis();
+// alice.saveBook(paul.shelf[2]);
+// alice.deleteBook(paul.shelf[2]);
 
-function Tempf() { // eslint-disable-line no-unused-vars
+/*function Tempf() { // eslint-disable-line no-unused-vars
   const { details } = paul.CreateBook('Biik', 'Author Four', 545, 'not read');
   const lol = 'lol';
   return {
@@ -284,3 +288,4 @@ function Tempf() { // eslint-disable-line no-unused-vars
 
 const v = new Tempf(); // eslint-disable-line no-unused-vars
 const t = Tempf(); // eslint-disable-line no-unused-vars
+*/
