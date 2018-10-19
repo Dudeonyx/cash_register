@@ -1,5 +1,5 @@
 const titleCase = string => string.toLowerCase().replace(/^.| ./g, u => u.toUpperCase()); // eslint-disable-line no-unused-vars
-const myFunctions = () => { // eslint-disable-line no-unused-vars
+const myFunctions = (() => { // eslint-disable-line no-unused-vars
   function checkCashRegister(price, cash, cid) {
     const change = [];
     const changeObject = {};
@@ -142,104 +142,103 @@ const myFunctions = () => { // eslint-disable-line no-unused-vars
     rot13,
     telephoneCheck,
   };
-};
+})();
 
 class Library {
   constructor(username) {
-    this.username = username.replace(/^./, u => u.toUpperCase());
+    this.username = titleCase(username);
     this.shelf = [];
   }
-  save(book) {
+
+
+  saveBook(book) {
     const { shelf } = this;
-    const bookIndex = shelf.findIndex(element => element.name === book.name);
+    const bookIndex = shelf.findIndex(element => element.title === book.title);
+    // check if another book with the same name is already in the shelf
     if (bookIndex > -1) {
-      return `'${book.name}' already exists in ${this.username}'s Library`;
+      return `'${book.title}' already exists in ${this.username}'s Library`;
     }
     this.shelf.push(book);
-    return `'${book.name}' has been added to ${this.username}'s Library`;
-  }
-  delete(book) {
-    const { shelf } = this;
-    const bookIndex = shelf.findIndex(element => element === book || element.name === book.name);
-    if (bookIndex > -1) {
-      shelf.splice(bookIndex, 1);
-      return `'${book.name}' has been deleted from ${this.username}'s Library`;
-    }
-    return `'${book.name}' does not exist in ${this.username}'s Library`;
+    return `'${book.title}' has been added to ${this.username}'s Library`;
   }
 
-  AddBook(name, author, pages, readStatus) {
+
+  deleteBook(book) {
+    const { shelf } = this;
+    const bookIndex = shelf.findIndex(element => element === book || element.title === book.title);
+    // check if book is in the shelf
+    if (bookIndex > -1) {
+      shelf.splice(bookIndex, 1);
+      return `'${book.title}' has been deleted from ${this.username}'s Library`;
+    }
+    return `'${book.title}' does not exist in ${this.username}'s Library`;
+  }
+
+
+  CreateBook(name, author, pages, readStatus) {
     const { username: owner } = this; // to keep username as owner in closure
     const bookIndex = this.shelf.findIndex(element => element.name === name);
     // check if another book with the same name is already in the shelf
     if (bookIndex > -1) {
       throw new Error(`'${name}' already exists in ${this.username}'s Library`);
     }
+    /* eslint-disable no-use-before-define */
+    const details = detail => (detail
+      ?
+      `${[titleCase(detail)]}: ${book[detail.toLowerCase()]}`
+      :
+      `Title: ${book.title},
+ Author: ${book.author},
+ Pages: ${book.pages},
+ ${book.read},
+ Library: ${owner}`);
+    const getOwner = () => owner;
+    const toggleRead = (status) => {
+      const validStatus = !status || titleCase(status);
+      if (status || validStatus === 'Read' || validStatus === 'Not Read') {
+        book.read = validStatus;
+        return book.read;
+      }
+      book.read = (book.read === 'Read') ? 'Not Read' : 'Read';
+      return book.read;
+    };
+    const test2 = () => {};
+    const saveThis = library => (library ? library.saveBook(book) : this.saveBook(book));
+    const trashThis = library => (library ? library.deleteBook(book) : this.deleteBook(book));
+    /* eslint-enable no-use-before-define */
     const book = {
-      name,
+      title: name,
       pages,
       author,
       read: titleCase(readStatus),
-      // ignore the weird indentation
-      details(detail) {
-        return detail
-          ?
-          `${[titleCase(detail)]}: ${this[detail.toLowerCase()]}`
-          :
-          `Name: ${this.name},
- Author: ${this.author},
- Pages: ${this.pages},
- ${this.read},
- Library: ${owner}`;
-      },
-      // weird indentation ends, still in book object
-      getOwner() {
-        return owner;
-      },
-      toggleRead(status) {
-        const validStatus = titleCase(status);
-        if (validStatus === 'Read' || validStatus === 'Not Read') {
-          this.read = validStatus;
-          return this.read;
-        }
-        this.read = (this.read === 'Read') ? 'Not Read' : 'Read';
-        return this.read;
-      },
+      details,
+      getOwner,
+      toggleRead,
+      test1() {},
+      test2,
+      saveThis,
+      trashThis,
     };
-    this.shelf.push(book);
-    return book;
+    return Object.freeze(book);
   }
 }
 
+
 const alice = new Library('Alice');
-const paul = new Library('Paul'); // eslint-disable-line no-unused-vars
-const wonder = alice.AddBook('Wonder', 'Author1', 250, 'Read'); // eslint-disable-line no-unused-vars
-const superman = paul.AddBook('Super', 'Author2', 308, 'Not read'); // eslint-disable-line no-unused-vars
-alice.save(superman);
-paul.save(wonder);
-paul.AddBook('Arrgh', 'Author3', 545, 'not read');
-alice.save(paul.shelf[2]);
+const paul = new Library('Paul');
+const wonderwoman = alice.CreateBook('Wonder', 'Author One', 250, 'Read');
+wonderwoman.saveThis();
+const superman = paul.CreateBook('Super', 'Author Two', 308, 'Not read');
+superman.saveThis();
+alice.saveBook(superman);
+paul.saveBook(wonderwoman);
+paul.CreateBook('Arrgh', 'Author Three', 545, 'not read').saveThis();
+alice.saveBook(paul.shelf[2]);
+alice.deleteBook(paul.shelf[2]);
 
-function Model() {}
-
-// Methods in the instantiated object
-Model.prototype = {
-  constructor: Model,
-
-  // Note that "delete" is a reserved word, so we need quotes
-  delete() {
-    return 'delete';
-  },
-
-  save() {},
-};
-
-// Static methods
-Model.all = () => 'all';
-
-Model.find = () => 'find';
-
-Model.create = () => new this();
-//   return new Model();
-
-// To be more generic, you can also:
+const t = (function tempf() { // eslint-disable-line no-unused-vars
+  const { details } = paul.CreateBook('Biik', 'Author Four', 545, 'not read');
+  return {
+    details,
+  };
+}());

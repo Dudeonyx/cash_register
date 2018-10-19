@@ -7,10 +7,10 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Launch Chrome",
+      "name": "Debug in Chrome",
       "url": "http://localhost:5500",
       "webRoot": "${workspaceFolder}"
-    }
+    },
    
   ]
 }
