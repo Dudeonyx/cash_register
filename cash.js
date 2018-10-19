@@ -154,7 +154,7 @@ const Lib = (() => {
     }
 
     static listLibraries() {
-      return users.reduce((acc, val) => `${acc + val.username}, `, '').replace(/, $/, '');
+      return users.reduce((acc, val) => `${acc}'${val.username}', `, '').replace(/, $/, '');
     }
 
     static addToLibraryList(library) {
@@ -166,6 +166,10 @@ const Lib = (() => {
       }
       users.push(library);
       return `'${library.username}' has been added to Users`;
+    }
+
+    listBooks() {
+      return this.shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
     }
 
     addToLibraryList() {
