@@ -244,7 +244,7 @@ const Lib = (() => {
         saveThis,
         deleteThis,
       };
-      // saveBook(book);
+      console.log(saveBook(book));
       return Object.freeze(book);
     }
 
