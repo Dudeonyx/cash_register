@@ -146,21 +146,12 @@ const myFunctions = (() => { // eslint-disable-line no-unused-vars
 
 const Lib = (() => {
   const users = [];
- /*  const staticMethods = {
-    listLibraries() {
-      return users.reduce((acc, val) => `${acc}'${val.username}', `, '').replace(/, $/, '');
-    },
-
-    addToLibraryList(library) {
-      if (library.constructor !== Library) throw new Error('Invalid Library');
-      const libraryIndex = users.findIndex(entry => entry.username === library.username);
-      // check if another book with the same name is already in the shelf
-      if (libraryIndex > -1) {
-        return `'${library.username}' already exists in Users`;
-      }
-      users.push(library);
-      return `'${library.username}' has been added to Users`;
-    }
+  function listLibraries() {
+    return users.reduce((acc, val) => `${acc}'${val.getUsername()}', `, '').replace(/, $/, '');
+  }
+  
+  /*
+    
   };
 
 
@@ -251,11 +242,25 @@ const Lib = (() => {
     },
   };  */
 
+
   function Library(user) {
     const username = titleCase(user);
     const shelf = [];
     // this.addToLibraryList();
-    const instanceMethods = {
+    const userLibrary = {
+      getUsername() {
+        return `${username}`;
+      },
+      addToLibraryList(library = this) {
+        // if (library.constructor !== Library) throw new Error('Invalid Library');
+        const libraryIndex = users.findIndex(entry => entry.getUsername() === library.getUsername());
+        // check if another book with the same name is already in the shelf
+        if (libraryIndex > -1) {
+          return `'${library.getUsername()}' already exists in Users`;
+        }
+        users.push(library);
+        return `'${library.getUsername()}' has been added to Users`;
+      },
       listBooks() {
         return shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
       },
@@ -312,9 +317,10 @@ const Lib = (() => {
           book.read = (book.read === 'Read') ? 'Not Read' : 'Read';
           return book.read;
         };
-        const test2 = () => {};
+        const test2 = () => this;
+        function test3() { return this; }
         function saveThis(library = parent) { return library.saveBook(this); }
-        function deleteThis(library = parent) { return library.deleteBook(book); }
+        function deleteThis(library = parent) { return library.deleteBook(this); }
         /* eslint-enable no-use-before-define */
         const book = {
           title,
@@ -324,20 +330,25 @@ const Lib = (() => {
           details,
           getOwner,
           toggleRead,
-          test1() {},
+          test1() { return this; },
           test2,
+          test3,
+          test4: () => this,
           saveThis,
           deleteThis,
         };
         return Object.freeze(book);
       },
     };
+    // addToLibraryList(userLibrary);
     // const instanceMethod = Object.assign({}, instanceMethods);
-    return Object.freeze(instanceMethods);
+    return Object.freeze(userLibrary);
   }
   // Object.keys(staticMethods).forEach((key) => { Library[key] = staticMethods[key]; });
   //  Object.keys(instanceMethods);
   // .forEach((key) => { Library.prototype[key] = instanceMethods[key]; });
+
+  Library.listLibraries = listLibraries;
   return {
     Library,
   };
