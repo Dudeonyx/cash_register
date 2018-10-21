@@ -144,7 +144,7 @@ const myFunctions = (() => { // eslint-disable-line no-unused-vars
   };
 })();
 
-const Lib = () => {
+const Lib = (() => {
   const users = [];
   const staticMethods = {
     listLibraries() {
@@ -178,7 +178,7 @@ const Lib = () => {
       users.push(this);
       return `'${username}' has been added to Users`;
     },*/
-
+     a: 'ddd',
     saveBook(book) {
       const { shelf } = this;
       const bookIndex = shelf.findIndex(entry => entry.title === book.title);
@@ -253,20 +253,21 @@ const Lib = () => {
 
   function Library(user) {
     const username = titleCase(user);
-    this.user = user;
     const shelf = [];
     // this.addToLibraryList();
     //return {};
   }
   Object.keys(staticMethods).forEach((key) => { Library[key] = staticMethods[key]; });
-  Object.keys(instanceMethods).forEach((key) => { Library.prototype[key] = instanceMethods[key]; });
-  return Library;
-};
+  console.log(Object.keys(instanceMethods))//.forEach((key) => { Library.prototype[key] = instanceMethods[key]; });
+  return {
+    Library,
+  };
+})();
 
-const Library = Lib();
-const alice = new Library('Alice');
-const paul = new Library('Paul');
-const john = new Library('John'); // eslint-disable-line no-unused-vars
+const { Library } = Lib;
+const alice = Library('Alice');
+const paul = Library('Paul');
+const john = Library('John'); // eslint-disable-line no-unused-vars
 // const wonderwoman = alice.CreateBook('Wonder', 'Author One', 250, 'Read');
 // wonderwoman.saveThis();
 // const superman = paul.CreateBook('Super', 'Author Two', 308, 'Not read');
