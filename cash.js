@@ -146,7 +146,7 @@ const myFunctions = (() => { // eslint-disable-line no-unused-vars
 
 const Lib = (() => {
   const users = [];
-  const staticMethods = {
+ /*  const staticMethods = {
     listLibraries() {
       return users.reduce((acc, val) => `${acc}'${val.username}', `, '').replace(/, $/, '');
     },
@@ -166,10 +166,10 @@ const Lib = (() => {
 
   const instanceMethods = {
     listBooks() {
-      return this.shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
+      return shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
     },
 
-    /*addToLibraryList() {
+    addToLibraryList() {
       const libraryIndex = users.findIndex(entry => entry.username === username);
       // check if another book with the same name is already in the shelf
       if (libraryIndex > -1) {
@@ -177,8 +177,8 @@ const Lib = (() => {
       }
       users.push(this);
       return `'${username}' has been added to Users`;
-    },*/
-     a: 'ddd',
+    },
+    // a: 'ddd',
     saveBook(book) {
       const { shelf } = this;
       const bookIndex = shelf.findIndex(entry => entry.title === book.title);
@@ -210,7 +210,7 @@ const Lib = (() => {
       if (bookIndex > -1) {
         throw new Error(`'${title}' already exists in ${this.username}'s Library`);
       }
-      /* eslint-disable no-use-before-define */
+      /* eslint-disable no-use-before-define *\/
       const details = detail => (detail
         ?
         `${[titleCase(detail)]}: ${book[detail.toLowerCase()]}`
@@ -233,7 +233,7 @@ const Lib = (() => {
       const test2 = () => {};
       const saveThis = (library = this) => library.saveBook(book);
       const trashThis = (library = this) => library.deleteBook(book);
-      /* eslint-enable no-use-before-define */
+      /* eslint-enable no-use-before-define *\/
       const book = {
         title,
         pages,
@@ -249,16 +249,95 @@ const Lib = (() => {
       };
       return Object.freeze(book);
     },
-  };
+  };  */
 
   function Library(user) {
     const username = titleCase(user);
     const shelf = [];
     // this.addToLibraryList();
-    //return {};
+    const instanceMethods = {
+      listBooks() {
+        return shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
+      },
+
+      saveBook(book) {
+        // const { shelf } = this;
+        const bookIndex = shelf.findIndex(entry => entry.title === book.title);
+        // check if another book with the same name is already in the shelf
+        if (bookIndex > -1) {
+          return `'${book.title}' already exists in ${username}'s Library`;
+        }
+        shelf.push(book);
+        return `'${book.title}' has been added to ${username}'s Library`;
+      },
+      
+      
+      deleteBook(book) {
+        // const { shelf } = this;
+        const bookIndex = shelf.findIndex(entry => entry === book || entry.title === book.title);
+        // check if book is in the shelf
+        if (bookIndex > -1) {
+          shelf.splice(bookIndex, 1);
+          return `'${book.title}' has been deleted from ${this.username}'s Library`;
+        }
+        return `'${book.title}' does not exist in ${this.username}'s Library`;
+      },
+  
+  
+      CreateBook(title, author, pages, readStatus) {
+        const parent = this;
+        const owner = username; // to keep username as owner in closure
+        const bookIndex = shelf.findIndex(element => element.name === title);
+        // check if another book with the same name is already in the shelf
+        if (bookIndex > -1) {
+          throw new Error(`'${title}' already exists in ${username}'s Library`);
+        }
+        /* eslint-disable no-use-before-define */
+        const details = detail => (detail
+          ?
+          `${[titleCase(detail)]}: ${book[detail.toLowerCase()]}`
+          :
+          `Title: ${book.title},
+   Author: ${book.author},
+   Pages: ${book.pages},
+   ${book.read},
+   Library: ${owner}`);
+        const getOwner = () => owner;
+        const toggleRead = (status) => {
+          const validStatus = !status || titleCase(status);
+          if (status || validStatus === 'Read' || validStatus === 'Not Read') {
+            book.read = validStatus;
+            return book.read;
+          }
+          book.read = (book.read === 'Read') ? 'Not Read' : 'Read';
+          return book.read;
+        };
+        const test2 = () => {};
+        function saveThis(library = parent) { return library.saveBook(this); }
+        function deleteThis(library = parent) { return library.deleteBook(book); }
+        /* eslint-enable no-use-before-define */
+        const book = {
+          title,
+          pages,
+          author,
+          read: titleCase(readStatus),
+          details,
+          getOwner,
+          toggleRead,
+          test1() {},
+          test2,
+          saveThis,
+          deleteThis,
+        };
+        return Object.freeze(book);
+      },
+    };
+    // const instanceMethod = Object.assign({}, instanceMethods);
+    return Object.freeze(instanceMethods);
   }
-  Object.keys(staticMethods).forEach((key) => { Library[key] = staticMethods[key]; });
-  console.log(Object.keys(instanceMethods))//.forEach((key) => { Library.prototype[key] = instanceMethods[key]; });
+  // Object.keys(staticMethods).forEach((key) => { Library[key] = staticMethods[key]; });
+  //  Object.keys(instanceMethods);
+  // .forEach((key) => { Library.prototype[key] = instanceMethods[key]; });
   return {
     Library,
   };
@@ -268,17 +347,17 @@ const { Library } = Lib;
 const alice = Library('Alice');
 const paul = Library('Paul');
 const john = Library('John'); // eslint-disable-line no-unused-vars
-// const wonderwoman = alice.CreateBook('Wonder', 'Author One', 250, 'Read');
-// wonderwoman.saveThis();
-// const superman = paul.CreateBook('Super', 'Author Two', 308, 'Not read');
-// superman.saveThis();
+const wonderwoman = alice.CreateBook('Wonder', 'Author One', 250, 'Read');
+wonderwoman.saveThis();
+const superman = paul.CreateBook('Super', 'Author Two', 308, 'Not read');
+superman.saveThis();
 // alice.saveBook(superman);
 // paul.saveBook(wonderwoman);
 // paul.CreateBook('Arrgh', 'Author Three', 545, 'not read').saveThis();
 // alice.saveBook(paul.shelf[2]);
 // alice.deleteBook(paul.shelf[2]);
 
-/*function Tempf() { // eslint-disable-line no-unused-vars
+/* function Tempf() { // eslint-disable-line no-unused-vars
   const { details } = paul.CreateBook('Biik', 'Author Four', 545, 'not read');
   const lol = 'lol';
   return {
