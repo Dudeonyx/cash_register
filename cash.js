@@ -164,13 +164,16 @@ const Lib = (() => {
   function Library(user) {
     const username = titleCase(user);
     const shelf = [];
-    // this.addToLibraryList();
     function getUsername() {
       return `${username}`;
     }
 
     function listBooks() {
       return shelf.reduce((acc, val) => `${acc}'${val.getTitle()}', `, '').replace(/, $/, '');
+    }
+
+    function displayShelf() {
+      return shelf.concat();
     }
 
     function saveBook(book) {
@@ -198,40 +201,41 @@ const Lib = (() => {
 
     function CreateBook(bookObject) {
       const { title, author, pages } = bookObject;
-      let readStatus = titleCase(bookObject.readStatus);
+      let status = titleCase(bookObject.status);
       const owner = username; // to keep username as owner in closure
       const bookIndex = shelf.findIndex(element => element.getTitle() === title);
       // check if another book with the same name is already in the shelf
       if (bookIndex > -1) {
         throw new Error(`'${title}' already exists in ${username}'s Library`);
       }
-      // /* eslint-disable no-use-before-define */
       function details(detail) {
+        const allDetails = {
+          Title: title,
+          Author: author,
+          Pages: pages,
+          Status: status,
+          Library: owner,
+        };
         return (detail
           ?
-          `${[titleCase(detail)]}: ${this[detail.toLowerCase()]}`
+          { [titleCase(detail)]: allDetails[titleCase(detail)] }
           :
-          `Title: ${title},
-   Author: ${author},
-   Pages: ${pages},
-   ${readStatus},
-   Library: ${owner}`);
+          allDetails);
       }
       const getOwner = () => owner;
-      const toggleRead = (status) => {
-        const validStatus = !status || titleCase(status);
-        if (status || validStatus === 'Read' || validStatus === 'Not Read') {
-          readStatus = validStatus;
-          return this.readStatus;
+      const toggleRead = (newStatus) => {
+        const validStatus = !newStatus || titleCase(newStatus);
+        if (newStatus || validStatus === 'Read' || validStatus === 'Not Read') {
+          status = validStatus;
+          return this.status;
         }
-        readStatus = (readStatus === 'Read') ? 'Not Read' : 'Read';
-        return readStatus;
+        status = (status === 'Read') ? 'Not Read' : 'Read';
+        return status;
       };
       const parent = () => this;
       function test3() { return this; }
       function saveThis(library = parent()) { return library.saveBook(this); }
       function deleteThis(library = parent()) { return library.deleteBook(this); }
-      // /* eslint-enable no-use-before-define */
       const book = {
         getTitle() { return title; },
         details,
@@ -255,17 +259,19 @@ const Lib = (() => {
       CreateBook,
       listBooks,
       addToLibraryList,
+      displayShelf,
     };
+
     addToLibraryList(userLibrary);
-    // const instanceMethod = Object.assign({}, instanceMethods);
+
     return Object.freeze(userLibrary);
   }
-  // Object.keys(staticMethods).forEach((key) => { Library[key] = staticMethods[key]; });
-  //  Object.keys(instanceMethods);
-  // .forEach((key) => { Library.prototype[key] = instanceMethods[key]; });
 
   Library.listLibraries = listLibraries;
+
   Library.addToLibraryList = addToLibraryList;
+
+
   return {
     Library,
   };
@@ -279,7 +285,7 @@ const wonderwoman = alice.CreateBook({
   title: 'Wonder',
   author: 'Author One',
   pages: 250,
-  readStatus: 'Read',
+  status: 'Read',
 });
 wonderwoman.saveThis();
 
@@ -287,14 +293,20 @@ const superman = paul.CreateBook({
   title: 'Super',
   author: 'Author Two',
   pages: 308,
-  readStatus: 'Not read',
+  status: 'Not read',
 });
 superman.saveThis();
 alice.saveBook(superman);
 paul.saveBook(wonderwoman);
-paul.CreateBook('Arrgh', 'Author Three', 545, 'not read').saveThis();
-alice.saveBook(paul.shelf[2]);
-alice.deleteBook(paul.shelf[2]);
+paul.CreateBook({
+  title: 'Arrgh',
+  author: 'Author Three',
+  pages: 545,
+  status: 'not read',
+}).saveThis();
+alice.saveBook((paul.displayShelf())[2]);
+(paul.displayShelf())[2].details();
+// alice.deleteBook(paul.shelf[2]);
 
 /* function Tempf() { // eslint-disable-line no-unused-vars
   const { details } = paul.CreateBook('Biik', 'Author Four', 545, 'not read');
