@@ -143,7 +143,7 @@ const myFunctions = (() => { // eslint-disable-line no-unused-vars
     telephoneCheck,
   };
 })();
-
+console.time('lib');
 const Lib = (() => {
   const users = [];
   function listLibraries() {
@@ -305,8 +305,9 @@ paul.CreateBook({
   status: 'not read',
 }).saveThis();
 alice.saveBook((paul.displayShelf())[2]);
+alice.deleteBook(paul.displayShelf()[2]);
+console.timeEnd('lib');
 (paul.displayShelf())[2].details();
-// alice.deleteBook(paul.shelf[2]);
 
 /* function Tempf() { // eslint-disable-line no-unused-vars
   const { details } = paul.CreateBook('Biik', 'Author Four', 545, 'not read');
