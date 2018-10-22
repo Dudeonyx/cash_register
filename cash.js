@@ -170,79 +170,79 @@ const Lib = (() => {
     }
 
     function listBooks() {
-      return shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
+      return shelf.reduce((acc, val) => `${acc}'${val.getTitle()}', `, '').replace(/, $/, '');
     }
 
     function saveBook(book) {
       // const { shelf } = this;
-      const bookIndex = shelf.findIndex(entry => entry.title === book.title);
+      const bookIndex = shelf.findIndex(entry => entry.getTitle() === book.getTitle());
       // check if another book with the same name is already in the shelf
       if (bookIndex > -1) {
-        return `'${book.title}' already exists in ${username}'s Library`;
+        return `'${book.getTitle()}' already exists in ${username}'s Library`;
       }
       shelf.push(book);
-      return `'${book.title}' has been added to ${username}'s Library`;
+      return `'${book.getTitle()}' has been added to ${username}'s Library`;
     }
 
     function deleteBook(book) {
       // const { shelf } = this;
-      const bookIndex = shelf.findIndex(entry => entry === book || entry.title === book.title);
+      const bookIndex = shelf
+        .findIndex(entry => entry === book || entry.getTitle() === book.getTitle());
       // check if book is in the shelf
       if (bookIndex > -1) {
         shelf.splice(bookIndex, 1);
-        return `'${book.title}' has been deleted from ${username}'s Library`;
+        return `'${book.getTitle()}' has been deleted from ${username}'s Library`;
       }
-      return `'${book.title}' does not exist in ${username}'s Library`;
+      return `'${book.getTitle()}' does not exist in ${username}'s Library`;
     }
 
-    function CreateBook(title, author, pages, readStatus) {
+    function CreateBook(bookObject) {
+      const { title, author, pages } = bookObject;
+      let readStatus = titleCase(bookObject.readStatus);
       const owner = username; // to keep username as owner in closure
-      const bookIndex = shelf.findIndex(element => element.name === title);
+      const bookIndex = shelf.findIndex(element => element.getTitle() === title);
       // check if another book with the same name is already in the shelf
       if (bookIndex > -1) {
         throw new Error(`'${title}' already exists in ${username}'s Library`);
       }
-      /* eslint-disable no-use-before-define */
+      // /* eslint-disable no-use-before-define */
       function details(detail) {
         return (detail
           ?
           `${[titleCase(detail)]}: ${this[detail.toLowerCase()]}`
           :
-          `Title: ${this.title},
-   Author: ${this.author},
-   Pages: ${this.pages},
-   ${this.read},
+          `Title: ${title},
+   Author: ${author},
+   Pages: ${pages},
+   ${readStatus},
    Library: ${owner}`);
       }
       const getOwner = () => owner;
       const toggleRead = (status) => {
         const validStatus = !status || titleCase(status);
         if (status || validStatus === 'Read' || validStatus === 'Not Read') {
-          this.read = validStatus;
-          return this.read;
+          readStatus = validStatus;
+          return this.readStatus;
         }
-        this.read = (this.read === 'Read') ? 'Not Read' : 'Read';
-        return this.read;
+        readStatus = (readStatus === 'Read') ? 'Not Read' : 'Read';
+        return readStatus;
       };
       const parent = () => this;
       function test3() { return this; }
       function saveThis(library = parent()) { return library.saveBook(this); }
       function deleteThis(library = parent()) { return library.deleteBook(this); }
-      /* eslint-enable no-use-before-define */
+      // /* eslint-enable no-use-before-define */
       const book = {
-        title,
-        pages,
-        author,
-        read: titleCase(readStatus),
+        getTitle() { return title; },
         details,
         getOwner,
         toggleRead,
+        saveThis,
+        deleteThis,
         test1() { return this; },
         // test2,
         test3,
         test4: () => this,
-        saveThis,
-        deleteThis,
       };
       console.log(saveBook(book));
       return Object.freeze(book);
@@ -275,15 +275,26 @@ const { Library } = Lib;
 const alice = Library('Alice');
 const paul = Library('Paul');
 const john = Library('John'); // eslint-disable-line no-unused-vars
-const wonderwoman = alice.CreateBook('Wonder', 'Author One', 250, 'Read');
+const wonderwoman = alice.CreateBook({
+  title: 'Wonder',
+  author: 'Author One',
+  pages: 250,
+  readStatus: 'Read',
+});
 wonderwoman.saveThis();
-const superman = paul.CreateBook('Super', 'Author Two', 308, 'Not read');
+
+const superman = paul.CreateBook({
+  title: 'Super',
+  author: 'Author Two',
+  pages: 308,
+  readStatus: 'Not read',
+});
 superman.saveThis();
-// alice.saveBook(superman);
-// paul.saveBook(wonderwoman);
-// paul.CreateBook('Arrgh', 'Author Three', 545, 'not read').saveThis();
-// alice.saveBook(paul.shelf[2]);
-// alice.deleteBook(paul.shelf[2]);
+alice.saveBook(superman);
+paul.saveBook(wonderwoman);
+paul.CreateBook('Arrgh', 'Author Three', 545, 'not read').saveThis();
+alice.saveBook(paul.shelf[2]);
+alice.deleteBook(paul.shelf[2]);
 
 /* function Tempf() { // eslint-disable-line no-unused-vars
   const { details } = paul.CreateBook('Biik', 'Author Four', 545, 'not read');
