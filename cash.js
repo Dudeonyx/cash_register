@@ -233,9 +233,9 @@ const Lib = (() => {
         book.read = (book.read === 'Read') ? 'Not Read' : 'Read';
         return book.read;
       };
-      const test2 = () => {};
-      const saveThis = (library = this) => library.saveBook(book);
-      const trashThis = (library = this) => library.deleteBook(book);
+      const parent = () => this;
+      function saveThis(library = parent()) { return library.saveBook(this); }
+      function trashThis(library = parent()) { return library.deleteBook(this); }
       /* eslint-enable no-use-before-define */
       const book = {
         title,
@@ -246,7 +246,7 @@ const Lib = (() => {
         getOwner,
         toggleRead,
         test1() {},
-        test2,
+        // test2,
         saveThis,
         trashThis,
       };
