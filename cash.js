@@ -1,5 +1,6 @@
 const titleCase = string => string.toLowerCase().replace(/^.| ./g, u => u.toUpperCase()); // eslint-disable-line no-unused-vars
-const myFunctions = (() => { // eslint-disable-line no-unused-vars
+const myFunctions = (() => {
+  // eslint-disable-line no-unused-vars
   function checkCashRegister(price, cash, cid) {
     const change = [];
     const changeObject = {};
@@ -144,7 +145,7 @@ const myFunctions = (() => { // eslint-disable-line no-unused-vars
   };
 })();
 console.time('lib');
-const Lib = (() => {
+const Library = (() => {
   const users = [];
   function listLibraries() {
     return users.reduce((acc, val) => `${acc}'${val.getUsername()}', `, '').replace(/, $/, '');
@@ -161,7 +162,7 @@ const Lib = (() => {
     return `'${library.getUsername()}' has been added to Users`;
   }
 
-  function Library(user) {
+  function CreateLibrary(user) {
     const username = titleCase(user);
     const shelf = [];
     function getUsername() {
@@ -189,8 +190,7 @@ const Lib = (() => {
 
     function deleteBook(book) {
       // const { shelf } = this;
-      const bookIndex = shelf
-        .findIndex(entry => entry === book || entry.getTitle() === book.getTitle());
+      const bookIndex = shelf.findIndex(entry => entry === book || entry.getTitle() === book.getTitle());
       // check if book is in the shelf
       if (bookIndex > -1) {
         shelf.splice(bookIndex, 1);
@@ -216,11 +216,7 @@ const Lib = (() => {
           Status: status,
           Library: owner,
         };
-        return (detail
-          ?
-          { [titleCase(detail)]: allDetails[titleCase(detail)] }
-          :
-          allDetails);
+        return detail ? { [titleCase(detail)]: allDetails[titleCase(detail)] } : allDetails;
       }
       const getOwner = () => owner;
       const toggleRead = (newStatus) => {
@@ -229,26 +225,36 @@ const Lib = (() => {
           status = validStatus;
           return this.status;
         }
-        status = (status === 'Read') ? 'Not Read' : 'Read';
+        status = status === 'Read' ? 'Not Read' : 'Read';
         return status;
       };
       const parent = () => this;
-      function test3() { return this; }
-      function saveThis(library = parent()) { return library.saveBook(this); }
-      function deleteThis(library = parent()) { return library.deleteBook(this); }
+      function test3() {
+        return this;
+      }
+      function saveThis(library = parent()) {
+        return library.saveBook(this);
+      }
+      function deleteThis(library = parent()) {
+        return library.deleteBook(this);
+      }
       const book = {
-        getTitle() { return title; },
+        getTitle() {
+          return title;
+        },
         details,
         getOwner,
         toggleRead,
         saveThis,
         deleteThis,
-        test1() { return this; },
+        test1() {
+          return this;
+        },
         // test2,
         test3,
         test4: () => this,
       };
-      console.log(saveBook(book));
+      saveBook(book);
       return Object.freeze(book);
     }
 
@@ -267,17 +273,14 @@ const Lib = (() => {
     return Object.freeze(userLibrary);
   }
 
-  Library.listLibraries = listLibraries;
+  CreateLibrary.listLibraries = listLibraries;
 
-  Library.addToLibraryList = addToLibraryList;
+  CreateLibrary.addToLibraryList = addToLibraryList;
 
-
-  return {
-    Library,
-  };
+  return CreateLibrary;
 })();
 
-const { Library } = Lib;
+// const { Library } = Lib;
 const alice = Library('Alice');
 const paul = Library('Paul');
 const john = Library('John'); // eslint-disable-line no-unused-vars
@@ -298,16 +301,18 @@ const superman = paul.CreateBook({
 superman.saveThis();
 alice.saveBook(superman);
 paul.saveBook(wonderwoman);
-paul.CreateBook({
-  title: 'Arrgh',
-  author: 'Author Three',
-  pages: 545,
-  status: 'not read',
-}).saveThis();
-alice.saveBook((paul.displayShelf())[2]);
+paul
+  .CreateBook({
+    title: 'Arrgh',
+    author: 'Author Three',
+    pages: 545,
+    status: 'not read',
+  })
+  .saveThis();
+alice.saveBook(paul.displayShelf()[2]);
 alice.deleteBook(paul.displayShelf()[2]);
 console.timeEnd('lib');
-(paul.displayShelf())[2].details();
+paul.displayShelf()[2].details();
 
 /* function Tempf() { // eslint-disable-line no-unused-vars
   const { details } = paul.CreateBook('Biik', 'Author Four', 545, 'not read');
