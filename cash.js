@@ -1,6 +1,5 @@
 const titleCase = string => string.toLowerCase().replace(/^.| ./g, u => u.toUpperCase()); // eslint-disable-line no-unused-vars
-const myFunctions = (() => {
-  // eslint-disable-line no-unused-vars
+const myFunctions = (() => { // eslint-disable-line no-unused-vars
   function checkCashRegister(price, cash, cid) {
     const change = [];
     const changeObject = {};
@@ -190,7 +189,8 @@ const Library = (() => {
 
     function deleteBook(book) {
       // const { shelf } = this;
-      const bookIndex = shelf.findIndex(entry => entry === book || entry.getTitle() === book.getTitle());
+      const bookIndex = shelf
+        .findIndex(entry => entry === book || entry.getTitle() === book.getTitle());
       // check if book is in the shelf
       if (bookIndex > -1) {
         shelf.splice(bookIndex, 1);
