@@ -143,8 +143,8 @@ const myFunctions = (() => { // eslint-disable-line no-unused-vars
     telephoneCheck,
   };
 })();
-
-const Lib = (() => {
+console.time('lib');
+const Library = (() => {
   const users = [];
   class Library {
     constructor(username) {
@@ -254,12 +254,10 @@ const Lib = (() => {
     }
   }
 
-  return Object.freeze({
-    Library,
-  });
+  return Library;
 })();
 
-const { Library } = Lib;
+// const { Library } = Lib;
 const alice = new Library('Alice');
 const paul = new Library('Paul');
 const john = new Library('John'); // eslint-disable-line no-unused-vars
@@ -272,8 +270,9 @@ paul.saveBook(wonderwoman);
 paul.CreateBook('Arrgh', 'Author Three', 545, 'not read').saveThis();
 alice.saveBook(paul.shelf[2]);
 alice.deleteBook(paul.shelf[2]);
+console.timeEnd('lib');
 
-function Tempf() { // eslint-disable-line no-unused-vars
+/* function Tempf() { // eslint-disable-line no-unused-vars
   const { details } = paul.CreateBook('Biik', 'Author Four', 545, 'not read');
   const lol = 'lol';
   return {
@@ -283,4 +282,4 @@ function Tempf() { // eslint-disable-line no-unused-vars
 }
 
 const v = new Tempf(); // eslint-disable-line no-unused-vars
-const t = Tempf(); // eslint-disable-line no-unused-vars
+const t = Tempf(); // eslint-disable-line no-unused-vars */
