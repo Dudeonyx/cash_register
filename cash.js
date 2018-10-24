@@ -1,12 +1,35 @@
 const titleCase = string => string.toLowerCase().replace(/^.| ./g, u => u.toUpperCase()); // eslint-disable-line no-unused-vars
 
+function shallowClone(o, clone = {}) {
+  const props = Object.getOwnPropertyNames(o);
+  props.forEach((prop) => {
+    const desc = Object.getOwnPropertyDescriptor(o, prop);
+    Object.defineProperty(clone, prop, desc);
+  });
+  return clone;
+}
+
+function objectMerge(objectA = {}, objectB = {}) {
+  const objectC = Object.create(Object.getPrototypeOf(objectA));
+  const propsA = Object.getOwnPropertyNames(objectA);
+  const propsB = Object.getOwnPropertyNames(objectB);
+  propsA.forEach((prop) => {
+    const desc = Object.getOwnPropertyDescriptor(objectA, prop);
+    Object.defineProperty(objectC, prop, desc);
+  });
+  propsB.forEach((prop) => {
+    const desc = Object.getOwnPropertyDescriptor(objectB, prop);
+    if (prop in objectA && prop !== 'constructor') {
+      objectC.dupProps = objectC.dupProps || {};
+      Object.defineProperty(objectC.dupProps, prop, desc);
+    } else Object.defineProperty(objectC, prop, desc);
+  });
+  return objectC;
+}
+
 const withConstructor = constructor => (o) => {
-  const proto = Object.assign(
-    {},
-    Object.getPrototypeOf(o),
-    { constructor },
-  );
-  return Object.assign(Object.create(proto), o);
+  const proto = Object.create(objectMerge(Object.getPrototypeOf(o), { constructor }));
+  return objectMerge(proto, o);
 };
 
 const myFunctions = (() => { // eslint-disable-line no-unused-vars
@@ -248,7 +271,7 @@ const Library = (() => {
       function deleteThis(library = parent()) {
         return library.deleteBook(this);
       }
-      const book = withConstructor(this.CreateBook)({
+      const book = {
         getTitle() {
           return title;
         },
@@ -263,7 +286,7 @@ const Library = (() => {
         // test2,
         test3,
         test4: () => this,
-      });
+      };
       saveBook(book);
       return Object.freeze(book);
     }
@@ -343,38 +366,42 @@ const pipe = (...fns) => x => fns.reduce((y, f) => f(y), x);
 // Set up some functional mixins
 const withFlying = (o) => {
   let isFlying = false;
-  return {
-    ...o,
-    fly() {
-      isFlying = true;
-      return this;
+  return objectMerge(
+    o,
+    {
+      fly() {
+        isFlying = true;
+        return this;
+      },
+      land() {
+        isFlying = false;
+        return this;
+      },
+      isFlying: () => isFlying,
     },
-    land() {
-      isFlying = false;
-      return this;
-    },
-    isFlying: () => isFlying,
-  };
+  );
 };
 const withBattery = ({ capacity }) => (o) => {
   let percentCharged = 100;
-  return {
-    ...o,
-    draw(percent) {
-      const remaining = percentCharged - percent;
-      percentCharged = remaining > 0 ? remaining : 0;
-      return this;
+  return objectMerge(
+    o,
+    {
+      draw(percent) {
+        const remaining = percentCharged - percent;
+        percentCharged = remaining > 0 ? remaining : 0;
+        return this;
+      },
+      getCharge: () => percentCharged,
+      get capacity() {
+        return capacity;
+      },
     },
-    getCharge: () => percentCharged,
-    get capacity() {
-      return capacity;
-    },
-  };
+  );
 };
 const createDrone = ({ capacity = '3000mAh' }) => pipe(
   withFlying,
   withBattery({ capacity }),
-  // withConstructor(createDrone),
+  withConstructor(createDrone),
 )({});
 const myDrone = createDrone({ capacity: '5500mAh' });
 console.log(`
@@ -384,13 +411,14 @@ console.log(`
   battery status: ${myDrone.draw(50).getCharge()}%
   battery drained: ${myDrone.draw(75).getCharge()}%
 `);
+
 console.log(`
   constructor linked: ${myDrone.constructor === createDrone}
 `);
 
-const obj = ((data) => {
+const obj = (data =>
   // let data = 'data';
-  return {
+  ({
     get data() {
       return data;
     },
@@ -405,5 +433,5 @@ const obj = ((data) => {
       data = newData;
       return data;
     },
-  };
-})('data');
+  })
+)('data');
