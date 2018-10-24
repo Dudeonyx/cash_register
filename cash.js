@@ -210,44 +210,51 @@ const Library = (() => {
 
   function CreateLibrary(user) {
     const username = titleCase(user);
-    const shelf = [];
+    // const shelf = [];
 
-    function listBooks() {
-      return shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
-    }
-
-    function displayShelf() {
-      return shelf.concat();
-    }
-
-    function saveBook(book) {
-      // const { shelf } = this;
-      const bookIndex = shelf.findIndex(entry => entry.title === book.title);
-      // check if another book with the same name is already in the shelf
-      if (bookIndex > -1) {
-        return `'${book.title}' already exists in ${username}'s Library`;
-      }
-      shelf.push(book);
-      return `'${book.title}' has been added to ${username}'s Library`;
-    }
-
-    function deleteBook(book) {
-      // const { shelf } = this;
-      const bookIndex = shelf
-        .findIndex(entry => entry === book || entry.title === book.title);
-      // check if book is in the shelf
-      if (bookIndex > -1) {
-        shelf.splice(bookIndex, 1);
-        return `'${book.title}' has been deleted from ${username}'s Library`;
-      }
-      return `'${book.title}' does not exist in ${username}'s Library`;
+    function withShelfFunctions(shelf = []) {
+      return o => objectMerge(
+        o,
+        {
+          get shelf() {
+            return shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
+          },
+          listBooks() {
+            return shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
+          },
+          displayShelf() {
+            return shelf.concat();
+          },
+          saveBook(book) {
+            // const { shelf } = this;
+            const bookIndex = shelf.findIndex(entry => entry.title === book.title);
+            // check if another book with the same name is already in the shelf
+            if (bookIndex > -1) {
+              return `'${book.title}' already exists in ${username}'s Library`;
+            }
+            shelf.push(book);
+            return `'${book.title}' has been added to ${username}'s Library`;
+          },
+          deleteBook(book) {
+            // const { shelf } = this;
+            const bookIndex = shelf
+              .findIndex(entry => entry === book || entry.title === book.title);
+            // check if book is in the shelf
+            if (bookIndex > -1) {
+              shelf.splice(bookIndex, 1);
+              return `'${book.title}' has been deleted from ${username}'s Library`;
+            }
+            return `'${book.title}' does not exist in ${username}'s Library`;
+          },
+        },
+      );
     }
 
     function CreateBook(bookObject, owner = username) {
       const { title, author, pages } = bookObject;
       let status = titleCase(bookObject.status);
 
-      const bookIndex = this.shelf.replace(/'/g, '').split(', ').findIndex(element => element === title);
+      const bookIndex = this.displayShelf().findIndex(book => book.title === title);
       // check if another book with the same name is already in the shelf
       if (bookIndex > -1) {
         throw new Error(`A book titled:'${title}' already exists in ${username}'s Library`);
@@ -276,11 +283,11 @@ const Library = (() => {
       function test3() {
         return this;
       }
-      function saveThisIn(library) {
-        return library ? library.saveBook(this) : saveBook(this);
+      function saveThisIn(library = parent) {
+        return library.saveBook(this);
       }
-      function deleteThisIn(library) {
-        return library ? library.deleteBook(this) : deleteBook(this);
+      function deleteThisIn(library = parent) {
+        return library.deleteBook(this);
       }
       const book = pipe(withConstructor(this.CreateBook))({
         get title() {
@@ -300,22 +307,19 @@ const Library = (() => {
         test3,
         test4: () => this,
       });
-      // saveBook(book);
+      this.saveBook(book);
       return Object.freeze(book);
     }
 
-    const newLibrary = pipe(withAddToLibraryList, withConstructor(CreateLibrary))({
+    const newLibrary = pipe(
+      withAddToLibraryList,
+      withShelfFunctions([]),
+      withConstructor(CreateLibrary),
+    )({
       get username() {
         return username;
       },
-      get shelf() {
-        return shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
-      },
-      saveBook,
-      deleteBook,
       CreateBook,
-      listBooks,
-      displayShelf,
     });
     newLibrary.addToLibraryList();
 
@@ -339,7 +343,7 @@ const wonder = alice.CreateBook({
   pages: 250,
   status: 'Read',
 });
-wonder.saveThisIn();
+// wonder.saveThisIn();
 
 const supes = paul.CreateBook({
   title: 'Superman',
@@ -347,7 +351,7 @@ const supes = paul.CreateBook({
   pages: 308,
   status: 'Not read',
 });
-supes.saveThisIn();
+// supes.saveThisIn();
 alice.saveBook(supes);
 paul.saveBook(wonder);
 paul
@@ -375,8 +379,6 @@ paul.displayShelf()[2].details();
 const v = new Tempf(); // eslint-disable-line no-unused-vars
 const t = Tempf(); // eslint-disable-line no-unused-vars
 */
-
-
 
 // or `import pipe from 'lodash/fp/flow';`
 // Set up some functional mixins
@@ -414,15 +416,14 @@ const withBattery = ({ capacity }) => (o) => {
     },
   );
 };
-const list = ['one'];
-const withList = listname => o => objectMerge(
+const withList = (listname = []) => o => objectMerge(
   o,
   {
     get list() {
       return listname;
     },
     set list(item) {
-      list.push(item);
+      listname.push(item);
       return listname;
     },
   },
@@ -431,7 +432,7 @@ const withList = listname => o => objectMerge(
 const createDrone = ({ capacity = '3000mAh' }) => pipe(
   withFlying,
   withBattery({ capacity }),
-  withList(list),
+  withList([]),
   withConstructor(createDrone),
 )({});
 const myDrone = createDrone({ capacity: '5500mAh' });
