@@ -3,32 +3,6 @@ const titleCase = string => string.toLowerCase().replace(/^.| ./g, u => u.toUppe
 const pipe = (...fns) => x => fns.reduce((y, f) => f(y), x);
 
 
-function shallowClone(o, clone = {}) {
-  const props = Object.getOwnPropertyNames(o);
-  props.forEach((prop) => {
-    const desc = Object.getOwnPropertyDescriptor(o, prop);
-    Object.defineProperty(clone, prop, desc);
-  });
-  return clone;
-}
-
-/* function myObject.merger(objectA = {}, objectB = {}) {
-  const newObject = Object.create(Object.getPrototypeOf(objectA));
-  const propsA = Object.getOwnPropertyNames(objectA);
-  const propsB = Object.getOwnPropertyNames(objectB);
-  propsA.forEach((prop) => {
-    const desc = Object.getOwnPropertyDescriptor(objectA, prop);
-    Object.defineProperty(newObject, prop, desc);
-  });
-  propsB.forEach((prop) => {
-    const desc = Object.getOwnPropertyDescriptor(objectB, prop);
-    if (prop in objectA && prop !== 'constructor') {
-      newObject.dupProps = newObject.dupProps || {};
-      Object.defineProperty(newObject.dupProps, prop, desc);
-    } else Object.defineProperty(newObject, prop, desc);
-  });
-  return newObject;
-} */
 const myObject = (() => {
   function merge(objectA = {}, ...objects) {
     const newObject = Object.create(Object.getPrototypeOf(objectA));
@@ -58,20 +32,23 @@ const myObject = (() => {
       return merge(proto2, o);
     };
   }
+  function shallowClone(o) {
+    const clone = {};
+    const props = Object.getOwnPropertyNames(o);
+    props.forEach((prop) => {
+      const desc = Object.getOwnPropertyDescriptor(o, prop);
+      Object.defineProperty(clone, prop, desc);
+    });
+    return clone;
+  }
   return Object.freeze({
     merge,
     setConstructor,
+    shallowClone,
   });
 })();
-const { setConstructor } = myObject;
-/* const myObject.setConstructor = constructor => (o, allMethodsPrototypal = false) => {
-  const proto1 = Object.create(Object.getPrototypeOf(o));
-  proto1.constructor = constructor;
-  if (allMethodsPrototypal) return Object.create(myObject.merge(proto1, o));
-  const proto2 = Object.create(proto1);
-  return myObject.merge(proto2, o);
-}; */
 
+const { setConstructor } = myObject;
 
 const myFunctions = (() => { // eslint-disable-line no-unused-vars
   function checkCashRegister(price, cash, cid) {
@@ -217,16 +194,18 @@ const myFunctions = (() => { // eslint-disable-line no-unused-vars
     telephoneCheck,
   };
 })();
+
 console.time('lib');
+
 const Library = (() => {
   function createLibraryList(libraryList = []) {
     return {
-      withAddToLibraryList: o => myObject.merge(
-        o,
-        {
+      withAddToLibraryList: o =>
+        myObject.merge(o, {
           addToLibraryList(library = this) {
-          // if (library.constructor !== Library) throw new Error('Invalid Library');
-            const libraryIndex = libraryList.findIndex(entry => entry.username === library.username);
+            // if (library.constructor !== Library) throw new Error('Invalid Library');
+            const libraryIndex = libraryList
+              .findIndex(entry => entry.username === library.username);
             // check if another book with the same name is already in the shelf
             if (libraryIndex > -1) {
               console.log(`'${library.username}' already exists in Users`);
@@ -236,9 +215,9 @@ const Library = (() => {
             console.log(`'${library.username}' has been added to Users`);
             return this;
           },
-        },
-      ),
-      showLibraryList: () => libraryList.reduce((acc, val) => `${acc}'${val.username}', `, '').replace(/, $/, ''),
+        }),
+      showLibraryList: () =>
+        libraryList.reduce((acc, val) => `${acc}'${val.username}', `, '').replace(/, $/, ''),
     };
   }
 
@@ -246,12 +225,10 @@ const Library = (() => {
 
   function CreateLibrary(user) {
     const username = titleCase(user);
-    // const shelf = [];
 
     function withShelfFunctions(shelf = []) {
-      return o => myObject.merge(
-        o,
-        {
+      return o =>
+        myObject.merge(o, {
           get shelf() {
             return shelf.reduce((acc, val) => `${acc}'${val.title}', `, '').replace(/, $/, '');
           },
@@ -272,7 +249,6 @@ const Library = (() => {
             return `'${book.title}' has been added to ${username}'s Library`;
           },
           deleteBook(book) {
-            // const { shelf } = this;
             const bookIndex = shelf
               .findIndex(entry => entry === book || entry.title === book.title);
             // check if book is in the shelf
@@ -282,8 +258,7 @@ const Library = (() => {
             }
             return `'${book.title}' does not exist in ${username}'s Library`;
           },
-        },
-      );
+        });
     }
 
     function CreateBook(bookObject, owner = username) {
@@ -305,7 +280,6 @@ const Library = (() => {
         };
         return detail ? { [titleCase(detail)]: allDetails[titleCase(detail)] } : allDetails;
       }
-      // const getOwner = () => owner;
       const toggleRead = (newStatus) => {
         const validStatus = !newStatus || titleCase(newStatus);
         if (newStatus || validStatus === 'Read' || validStatus === 'Not Read') {
@@ -315,10 +289,9 @@ const Library = (() => {
         status = status === 'Read' ? 'Not Read' : 'Read';
         return status;
       };
+
       const parent = this;
-      function test3() {
-        return this;
-      }
+
       function saveThisIn(library = parent) {
         return library.saveBook(this);
       }
@@ -336,12 +309,6 @@ const Library = (() => {
         toggleRead,
         saveThisIn,
         deleteThisIn,
-        test1() {
-          return this;
-        },
-        // test2,
-        test3,
-        test4: () => this,
       });
       this.saveBook(book);
       return Object.freeze(book);
@@ -379,7 +346,6 @@ const wonder = alice.CreateBook({
   pages: 250,
   status: 'Read',
 });
-// wonder.saveThisIn();
 
 const supes = paul.CreateBook({
   title: 'Superman',
@@ -387,7 +353,6 @@ const supes = paul.CreateBook({
   pages: 308,
   status: 'Not read',
 });
-// supes.saveThisIn();
 alice.saveBook(supes);
 paul.saveBook(wonder);
 paul
@@ -403,68 +368,48 @@ alice.saveBook(paul.displayShelf()[2]);
 console.timeEnd('lib');
 paul.displayShelf()[2].details();
 
-/* function Tempf() { // eslint-disable-line no-unused-vars
-  const { details } = paul.CreateBook('Biik', 'Author Four', 545, 'not read');
-  const lol = 'lol';
-  return {
-    details,
-    lol,
-  };
-}
-
-const v = new Tempf(); // eslint-disable-line no-unused-vars
-const t = Tempf(); // eslint-disable-line no-unused-vars
-*/
-
 // or `import pipe from 'lodash/fp/flow';`
 // Set up some functional mixins
 const withFlying = (o) => {
   let isFlying = false;
-  return myObject.merge(
-    o,
-    {
-      fly() {
-        isFlying = true;
-        return this;
-      },
-      land() {
-        isFlying = false;
-        return this;
-      },
-      get isFlying() {
-        return isFlying;
-      },
-      set isFlying(newBoolean) {
-        throw new Error(`isFlying can not be reassigned directly and thus is still ${isFlying}`);
-      },
+  return myObject.merge(o, {
+    fly() {
+      isFlying = true;
+      return this;
     },
-  );
+    land() {
+      isFlying = false;
+      return this;
+    },
+    get isFlying() {
+      return isFlying;
+    },
+    set isFlying(newBoolean) {
+      throw new Error(`isFlying can not be reassigned directly and thus is still ${isFlying}`);
+    },
+  });
 };
 const withBattery = ({ capacity }) => (o) => {
   let percentCharged = 100;
-  return myObject.merge(
-    o,
-    {
-      draw(percent = 0) {
-        const remaining = percentCharged - percent;
-        percentCharged = remaining > 0 ? remaining : 0;
-        return this;
-      },
-      charge(percent = 0) {
-        const newPercent = percentCharged + percent;
-        percentCharged = newPercent < 100 ? newPercent : 100;
-        return this;
-      },
-      getCharge: () => percentCharged,
-      get capacity() {
-        return capacity;
-      },
+  return myObject.merge(o, {
+    draw(percent = 0) {
+      const remaining = percentCharged - percent;
+      percentCharged = remaining > 0 ? remaining : 0;
+      return this;
     },
-  );
+    charge(percent = 0) {
+      const newPercent = percentCharged + percent;
+      percentCharged = newPercent < 100 ? newPercent : 100;
+      return this;
+    },
+    getCharge: () => percentCharged,
+    get capacity() {
+      return capacity;
+    },
+  });
 };
-const withList = (listname = []) => o => myObject.merge(
-  o,
-  {
+const withList = (listname = []) => o =>
+  myObject.merge(o, {
     get list() {
       return listname;
     },
@@ -472,15 +417,15 @@ const withList = (listname = []) => o => myObject.merge(
       listname.push(item);
       return listname;
     },
-  },
-);
+  });
 
-const createDrone = ({ capacity = '3000mAh' }) => pipe(
-  withFlying,
-  withBattery({ capacity }),
-  withList([]),
-  myObject.setConstructor(createDrone),
-)({});
+const createDrone = ({ capacity = '3000mAh' }) =>
+  pipe(
+    withFlying,
+    withBattery({ capacity }),
+    withList([]),
+    myObject.setConstructor(createDrone),
+  )({});
 const myDrone = createDrone({ capacity: '5500mAh' });
 console.log(`
   can fly:  ${myDrone.fly().isFlying === true}
@@ -494,9 +439,9 @@ console.log(`
   constructor linked: ${myDrone.constructor === createDrone}
 `);
 
-const obj = (data =>
-  // let data = 'data';
-  ({
+const obj = (() => {
+  let data = 'data';
+  return {
     get data() {
       return data;
     },
@@ -511,10 +456,9 @@ const obj = (data =>
       data = newData;
       return data;
     },
-  })
-)('data');
-obj.__proto__.sayHello = () => 'Hello';
+  };
+})();
 
 const obj2 = myObject.setConstructor(createDrone)(obj);
-const obj3 = setConstructor(createDrone)(obj2, true);
-const obj4 = myObject.merge(myDrone, obj, wonder);
+const obj3 = setConstructor(createDrone)(obj2, true); // eslint-disable-line no-unused-vars
+const obj4 = myObject.merge(myDrone, obj, wonder); // eslint-disable-line no-unused-vars
