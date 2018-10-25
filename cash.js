@@ -31,8 +31,10 @@ function objectMerge(objectA = {}, objectB = {}) {
 }
 
 const withConstructor = constructor => (o) => {
-  const proto = Object.create(objectMerge(Object.getPrototypeOf(o), { constructor }));
-  return objectMerge(proto, o);
+  const proto1 = Object.create(Object.getPrototypeOf(o));
+  proto1.constructor = constructor;
+  const proto2 = Object.create(proto1);
+  return objectMerge(proto2, o);
 };
 
 
@@ -467,3 +469,6 @@ const obj = (data =>
     },
   })
 )('data');
+obj.__proto__.sayHello = () => 'Hello';
+
+const obj2 = withConstructor(createDrone)(obj);
