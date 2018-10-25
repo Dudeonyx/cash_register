@@ -12,32 +12,65 @@ function shallowClone(o, clone = {}) {
   return clone;
 }
 
-function objectMerge(objectA = {}, objectB = {}) {
-  const objectC = Object.create(Object.getPrototypeOf(objectA));
+/* function myObject.merger(objectA = {}, objectB = {}) {
+  const newObject = Object.create(Object.getPrototypeOf(objectA));
   const propsA = Object.getOwnPropertyNames(objectA);
   const propsB = Object.getOwnPropertyNames(objectB);
   propsA.forEach((prop) => {
     const desc = Object.getOwnPropertyDescriptor(objectA, prop);
-    Object.defineProperty(objectC, prop, desc);
+    Object.defineProperty(newObject, prop, desc);
   });
   propsB.forEach((prop) => {
     const desc = Object.getOwnPropertyDescriptor(objectB, prop);
     if (prop in objectA && prop !== 'constructor') {
-      objectC.dupProps = objectC.dupProps || {};
-      Object.defineProperty(objectC.dupProps, prop, desc);
-    } else Object.defineProperty(objectC, prop, desc);
+      newObject.dupProps = newObject.dupProps || {};
+      Object.defineProperty(newObject.dupProps, prop, desc);
+    } else Object.defineProperty(newObject, prop, desc);
   });
-  return objectC;
-}
-
-const withConstructor = constructor => (o, allMethodsPrototypal = false) => {
+  return newObject;
+} */
+const myObject = (() => {
+  function merge(objectA = {}, ...objects) {
+    const newObject = Object.create(Object.getPrototypeOf(objectA));
+    const propsA = Object.getOwnPropertyNames(objectA);
+    propsA.forEach((prop) => {
+      const desc = Object.getOwnPropertyDescriptor(objectA, prop);
+      Object.defineProperty(newObject, prop, desc);
+    });
+    objects.forEach((object) => {
+      const props = Object.getOwnPropertyNames(object);
+      props.forEach((prop) => {
+        const desc = Object.getOwnPropertyDescriptor(object, prop);
+        if (prop in objectA && prop !== 'constructor') {
+          if (!newObject.dupProps) newObject.dupProps = {};
+          Object.defineProperty(newObject.dupProps, prop, desc);
+        } else Object.defineProperty(newObject, prop, desc);
+      });
+    });
+    return newObject;
+  }
+  function setConstructor(constructor) {
+    return (o, allMethodsPrototypal = false) => {
+      const proto1 = Object.create(Object.getPrototypeOf(o));
+      proto1.constructor = constructor;
+      if (allMethodsPrototypal) return Object.create(merge(proto1, o));
+      const proto2 = Object.create(proto1);
+      return merge(proto2, o);
+    };
+  }
+  return Object.freeze({
+    merge,
+    setConstructor,
+  });
+})();
+const { setConstructor } = myObject;
+/* const myObject.setConstructor = constructor => (o, allMethodsPrototypal = false) => {
   const proto1 = Object.create(Object.getPrototypeOf(o));
   proto1.constructor = constructor;
-  if (allMethodsPrototypal) return Object.create(objectMerge(proto1, o));
+  if (allMethodsPrototypal) return Object.create(myObject.merge(proto1, o));
   const proto2 = Object.create(proto1);
-  return objectMerge(proto2, o);
-};
-
+  return myObject.merge(proto2, o);
+}; */
 
 
 const myFunctions = (() => { // eslint-disable-line no-unused-vars
@@ -188,7 +221,7 @@ console.time('lib');
 const Library = (() => {
   function createLibraryList(libraryList = []) {
     return {
-      withAddToLibraryList: o => objectMerge(
+      withAddToLibraryList: o => myObject.merge(
         o,
         {
           addToLibraryList(library = this) {
@@ -216,7 +249,7 @@ const Library = (() => {
     // const shelf = [];
 
     function withShelfFunctions(shelf = []) {
-      return o => objectMerge(
+      return o => myObject.merge(
         o,
         {
           get shelf() {
@@ -292,7 +325,7 @@ const Library = (() => {
       function deleteThisIn(library = parent) {
         return library.deleteBook(this);
       }
-      const book = pipe(withConstructor(this.CreateBook))({
+      const book = pipe(myObject.setConstructor(this.CreateBook))({
         get title() {
           return title;
         },
@@ -317,7 +350,7 @@ const Library = (() => {
     const newLibrary = pipe(
       withAddToLibraryList,
       withShelfFunctions([]),
-      withConstructor(CreateLibrary),
+      myObject.setConstructor(CreateLibrary),
     )({
       get username() {
         return username;
@@ -387,7 +420,7 @@ const t = Tempf(); // eslint-disable-line no-unused-vars
 // Set up some functional mixins
 const withFlying = (o) => {
   let isFlying = false;
-  return objectMerge(
+  return myObject.merge(
     o,
     {
       fly() {
@@ -398,18 +431,28 @@ const withFlying = (o) => {
         isFlying = false;
         return this;
       },
-      isFlying: () => isFlying,
+      get isFlying() {
+        return isFlying;
+      },
+      set isFlying(newBoolean) {
+        throw new Error(`isFlying can not be reassigned directly and thus is still ${isFlying}`);
+      },
     },
   );
 };
 const withBattery = ({ capacity }) => (o) => {
   let percentCharged = 100;
-  return objectMerge(
+  return myObject.merge(
     o,
     {
-      draw(percent) {
+      draw(percent = 0) {
         const remaining = percentCharged - percent;
         percentCharged = remaining > 0 ? remaining : 0;
+        return this;
+      },
+      charge(percent = 0) {
+        const newPercent = percentCharged + percent;
+        percentCharged = newPercent < 100 ? newPercent : 100;
         return this;
       },
       getCharge: () => percentCharged,
@@ -419,7 +462,7 @@ const withBattery = ({ capacity }) => (o) => {
     },
   );
 };
-const withList = (listname = []) => o => objectMerge(
+const withList = (listname = []) => o => myObject.merge(
   o,
   {
     get list() {
@@ -436,12 +479,12 @@ const createDrone = ({ capacity = '3000mAh' }) => pipe(
   withFlying,
   withBattery({ capacity }),
   withList([]),
-  withConstructor(createDrone),
+  myObject.setConstructor(createDrone),
 )({});
 const myDrone = createDrone({ capacity: '5500mAh' });
 console.log(`
-  can fly:  ${myDrone.fly().isFlying() === true}
-  can land: ${myDrone.land().isFlying() === false}
+  can fly:  ${myDrone.fly().isFlying === true}
+  can land: ${myDrone.land().isFlying === false}
   battery capacity: ${myDrone.capacity}
   battery status: ${myDrone.draw(50).getCharge()}%
   battery drained: ${myDrone.draw(75).getCharge()}%
@@ -472,5 +515,6 @@ const obj = (data =>
 )('data');
 obj.__proto__.sayHello = () => 'Hello';
 
-const obj2 = withConstructor(createDrone)(obj);
-const obj3 = withConstructor(createDrone)(obj2, true);
+const obj2 = myObject.setConstructor(createDrone)(obj);
+const obj3 = setConstructor(createDrone)(obj2, true);
+const obj4 = myObject.merge(myDrone, obj, wonder);
